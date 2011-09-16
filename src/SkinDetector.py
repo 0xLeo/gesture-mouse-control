@@ -17,10 +17,14 @@ class SkinDetector:
     """
     def __init__(self,
             hsv_low = np.array([0, 48, 80], np.uint8),
-            hsv_high = np.array([20, 255, 255], np.uint8)):
+            hsv_high = np.array([20, 255, 255], np.uint8),
+            ycrcb_low = np.array([90, 100, 130], np.uint8),
+            ycrcb_high = np.array([230, 120, 180], np.uint8)): 
         # skin detection HSV domain limits
         self.hsv_low = hsv_low
         self.hsv_high = hsv_high
+        self.ycrcb_low = ycrcb_low
+        self.ycrcb_high = ycrcb_high
         self.timeout = 15
         self._instructions = '\n\n\n\n\n'\
                 'Please place your hand in the\n'\
@@ -141,7 +145,7 @@ class SkinDetector:
         self.hsv_high = np.array([h_max, s_max, 255], np.uint8) 
 
 
-    def apply_mask(self, im, mirror = True):
+    def apply_hsv_mask(self, im, mirror = True):
         assert len(im.shape) == 3,\
             "This method takes a BGR image and finds the"\
             "skin"
@@ -153,6 +157,25 @@ class SkinDetector:
         hsv = cv2.bitwise_and(hsv, hsv, mask = self.mask)
         im_skin = cv2.bitwise_and(im, im, mask = self.mask) 
         return im_skin
+
+
+    def extract_hsv_model(self, vid_file = 0, mirror = True):
+        pass
+
+
+    def apply_ycrcb_mark(self, im, mirror = True):
+        assert len(im.shape) == 3,\
+            "This method takes a BGR image and finds the"\
+            "skin"
+        if mirror:
+            im = cv2.flip(im, 1)
+        ycrcb = cv2.cvtColor(im, cv2.COLOR_BGR2YCR_CB)
+        self.mask = cv2.inRange(hsv, self.ycrcb_low,\
+            self.ycrcb_high)
+        ycrcb = cv2.bitwise_and(ycrcb, ycrcb, mask = self.mask)
+        im_skin = cv2.bitwise_and(im, im, mask = self.mask) 
+        return im_skin
+
 
 
     def smoothen_mask(self, rad = 9, iterations = 2):
