@@ -3,6 +3,10 @@ import numpy as np
 
 
 class LkTracker:
+    """
+    For usage, see:
+    https://gist.github.com/0xLeo/c5f9cc9e23b9a4f6f07f9149492806df
+    """
     def __init__(self,
             max_conrners = 100,
             quality_level = 0.2,
