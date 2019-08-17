@@ -1,7 +1,7 @@
 # gesture-mouse-control2
 
 ### Brief
-Control computer curson by using a webcam and gestures using geometric methods.  
+Control computer cursor by using a webcam and gestures using geometric methods. No other equipment required.  
 Still at early stage -- adding classes to get my job done. Functionality I need, as Python classes is:  
 - [ ] Adaptive skin detector
 - [x] Interactive image cropper to extract a skin sample (MouseRoi.py)
