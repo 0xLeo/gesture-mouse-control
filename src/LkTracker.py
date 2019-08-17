@@ -65,7 +65,6 @@ class LkTracker:
         self._mask = mask
 
     def calc_opt_flow(self, mask = None):
-
         if self._first_time:
             self._p0 = cv2.goodFeaturesToTrack(self.frame1,
                     mask = self.mask,
@@ -93,7 +92,6 @@ class LkTracker:
         else:
             im = bgr
         for p in pts:
-            print(p)
             im_drawn = cv2.circle(im, tuple(p), 3, (0, 255, 0), 2)
         return im_drawn
 
@@ -102,5 +100,3 @@ class LkTracker:
         cv2.imshow(wname, im)
         cv2.waitKey(timeout * 1000)
         cv2.destroyAllWindows()
-
-
