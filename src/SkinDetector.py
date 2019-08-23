@@ -128,7 +128,7 @@ class SkinDetector:
         s_max = s_max + amount * (255 - s_max)
         h_max = h_max + .25 * amount * (179 - h_max)
         s_min = s_min - amount * s_min
-        h_min = h_min + .25 * amount * h_min
+        h_min = h_min - .25 * amount * h_min
         self.hsv_low = np.array([h_min, s_min, 80], np.uint8)
         self.hsv_high = np.array([h_max, s_max, 255], np.uint8) 
 
