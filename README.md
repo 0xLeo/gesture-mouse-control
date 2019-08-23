@@ -3,13 +3,15 @@
 ### Brief
 Control computer cursor by using a webcam and gestures using geometric methods. No other equipment required.  
 Still at early stage -- adding classes to get my job done. Functionality I need, as Python classes is:  
-- [ ] Adaptive skin detector - in progress + grabcut?
+- [x] Adaptive skin detector
+- [ ] grabcut as alternative/ enhancer for skin detector?
 - [x] Interactive image cropper to extract a skin sample (MouseRoi.py)
 - [x] Lucas-Kanade tracker to track hand features (LkTracker.py)
 - [ ] Contour, convex hull finder, gesture estimator
 - [ ] Face removal module
 - [ ] Hand centroid estimator
 - [ ] Library to interface with cursor 
+- [ ] Unit tests
 
 ### Algorithm description
 
