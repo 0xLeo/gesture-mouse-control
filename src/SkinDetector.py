@@ -36,10 +36,10 @@ class SkinDetector:
  
 
     @staticmethod
-    def text_on_image(text, im):
+    def text_on_image(text, im, y0 = 30):
         white = (255, 255, 255)
-        # y0 is the text position. TODO: pass it as parameter
-        y0,  dy = 30,  30
+        # y0 is the text position
+        y0,  dy = y0, 30
         for i, line in enumerate(text.split('\n')):
             y = y0 + i*dy
             cv2.putText(im,
@@ -61,7 +61,9 @@ class SkinDetector:
             top = (0, 0)
             bottom = (int(im.shape[0]/7),
                     int(im.shape[1]/7))
-            _, im = cap.read()
+            val, im = cap.read()
+            if val:
+                break
             if mirror:
                 im = cv2.flip(im, 1)
             # text and rectangle
@@ -79,12 +81,14 @@ class SkinDetector:
         at top left.
         """
         cap  = cv2.VideoCapture(vid_file)
-        val = True
+        val, im = cap.read()
         
         self.accum_hsv_hist = np.zeros((180,256), np.float32) 
         time_start = time.time()
         while val and time.time() - time_start < self.timeout:
             val, im = cap.read()
+            if not val:
+                break
             if mirror:
                 im = cv2.flip(im, 1)
             #im = cv2.GaussianBlur(im, (13, 13), 8.25,\
