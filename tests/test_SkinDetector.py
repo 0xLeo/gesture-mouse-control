@@ -25,7 +25,7 @@ class TestSkinDetector(unittest.TestCase):
         sd = SkinDetector()
         # this vid contains only one tone to detect
         # so self.hsv_low[:2] is equal to self.hsv_high[:2]
-        vid_file = '../test_vid/test.mp4'
+        vid_file = 'test_vid/test.mp4'
         sd.show_instructions(vid_file)
         sd.extract_skin(vid_file, mirror = False)
         h = sd.hsv_low[0]  
