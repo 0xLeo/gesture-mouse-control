@@ -9,12 +9,16 @@ class GrabCut:
     grab.apply_grab_cut_mask()
     '''
     def __init__(self, im):
+        assert len(im.shape) == 3,\
+                "Wrong input. Input is a BGR image"
         self.im = im
         self.mask = np.zeros(self.im.shape[:2],np.uint8)
         self.mask[:,:] = cv2.GC_PR_BGD
         self.output = None
 
     def create_circular_mask(self, center, rad):
+        assert type(center) is tuple, \
+            "parameter center must be a tuple"
         for r in range(center[1] - rad, center[1] + rad):
             for c in range(center[0] - rad, center[0] + rad):
                 # TODO: is in image? check for edges
