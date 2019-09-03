@@ -9,6 +9,7 @@ Still at early stage -- adding classes to get my job done. Functionality I need,
 - [x] Lucas-Kanade tracker to track hand features (LkTracker.py)
 - [ ] Contour, convex hull finder, gesture estimator
 - [ ] Face removal module
+- [ ] max inscribed circle and min enclosing circle for arms
 - [ ] Hand centroid estimator
 - [ ] Library to interface with cursor 
 - [ ] Unit tests
