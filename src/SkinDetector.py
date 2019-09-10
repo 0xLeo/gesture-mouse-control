@@ -4,7 +4,6 @@ import numpy as np
 
 
 class SkinDetector:
-
     """
     # Usage example:
     sd = SkinDetector()
@@ -12,7 +11,8 @@ class SkinDetector:
     sd.extract_skin(vid_file)
 
     sd.stretch_hsv_limits(amount = .1)
-    sd.apply_mask(vid_file)
+    # loop through the video, get current image im and
+    sd.apply_mask(im)
     """
     def __init__(self,
             hsv_low = np.array([0, 48, 80], np.uint8),
@@ -32,9 +32,8 @@ class SkinDetector:
                 'and no other objects.' 
         # 0 -> webcam
         self.vid_file = 0
-        self.mask = []
+        self.mask = None 
  
-
     @staticmethod
     def text_on_image(text, im, y0 = 30):
         white = (255, 255, 255)
@@ -50,7 +49,6 @@ class SkinDetector:
                 color = white,
                 thickness = 2)
         return im 
-
 
     def show_instructions(self, vid_file = 0, mirror = True):
         cap = cv2.VideoCapture(vid_file)
@@ -74,14 +72,15 @@ class SkinDetector:
             if k != -1:
                 break
 
-
     def extract_skin(self, vid_file = 0, mirror = True):
         """
+        Runs on a video.
         Gets an HSV skin model of the object inside the rectangle
         at top left.
         """
         cap  = cv2.VideoCapture(vid_file)
         val, im = cap.read()
+        assert val, "Cannot read from camera"
         
         self.accum_hsv_hist = np.zeros((180,256), np.float32) 
         time_start = time.time()
@@ -126,7 +125,8 @@ class SkinDetector:
 
     def stretch_hsv_limits(self, amount = 0.3):
         assert .0 <= amount <= 1.,\
-            "That's how I designed it!"
+            "Must be a float from 0 to 1."\
+            "The higher, the more value it considers as skin."
         h_max, s_max, _ = self.hsv_high
         h_min, s_min, _ = self.hsv_low
         s_max = s_max + amount * (255 - s_max)
@@ -136,22 +136,20 @@ class SkinDetector:
         self.hsv_low = np.array([h_min, s_min, 80], np.uint8)
         self.hsv_high = np.array([h_max, s_max, 255], np.uint8) 
 
+    def apply_mask(self, im, mirror = True):
+        assert len(im.shape) == 3,\
+            "This method takes a BGR image and finds the"\
+            "skin"
+        if mirror:
+            im = cv2.flip(im, 1)
+        hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+        self.mask = cv2.inRange(hsv, self.hsv_low,\
+            self.hsv_high)
+        hsv = cv2.bitwise_and(hsv, hsv, mask = self.mask)
+        im_skin = cv2.bitwise_and(im, im, mask = self.mask) 
+        return im_skin
 
-    def apply_mask(self, vid_file = 0, mirror = True):
-        cap  = cv2.VideoCapture(vid_file)
-        val = True
-        val, im = cap.read()
-        while val:
-            val, im = cap.read()
-            if mirror:
-                im = cv2.flip(im, 1)
-            hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
-            self.mask = cv2.inRange(hsv, self.hsv_low,\
-                    self.hsv_high)
-            hsv = cv2.bitwise_and(hsv, hsv, mask = self.mask)
-            im_skin = cv2.bitwise_and(im, im, mask= self.mask) 
-            cv2.imshow("skin sample", im_skin)
-            k = cv2.waitKey(10)
-            if k != -1:
-                break
-        cv2.destroyAllWindows()
+    def smoothen_mask(self, rad = 9, iterations = 2):
+        assert self.mask is not None, \
+            "mask processing follows the apply_mask method"
+        # TODO: opening followed by closing
