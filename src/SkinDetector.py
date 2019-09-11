@@ -1,7 +1,6 @@
 import cv2
 import time
 import numpy as np
-import os
 
 
 class SkinDetector:
@@ -52,9 +51,6 @@ class SkinDetector:
         return im 
 
     def show_instructions(self, vid_file = 0, mirror = True):
-        assert os.path.isfile(vid_file) or\
-                isinstance(vid_file,int),\
-                "Video file does not exist"
         cap = cv2.VideoCapture(vid_file)
         val, im = cap.read()
         assert val,\
@@ -64,7 +60,7 @@ class SkinDetector:
             bottom = (int(im.shape[0]/7),
                     int(im.shape[1]/7))
             val, im = cap.read()
-            if not val:
+            if val:
                 break
             if mirror:
                 im = cv2.flip(im, 1)
