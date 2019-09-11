@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import os
 
 
 class SkinDetector:
@@ -8,7 +9,7 @@ class SkinDetector:
     # Usage example:
     sd = SkinDetector()
     sd.show_instructions(vid_file)
-    sd.extract_skin(vid_file)
+    sd.extract_hsv_model(vid_file)
 
     sd.stretch_hsv_limits(amount = .1)
     # loop through the video, get current image im and
@@ -21,7 +22,6 @@ class SkinDetector:
         self.hsv_low = hsv_low
         self.hsv_high = hsv_high
         self.timeout = 15
-        self.accum_hsv_hist = np.zeros((180, 256), np.float32)
         self._instructions = '\n\n\n\n\n'\
                 'Please place your hand in the\n'\
                 'green rectangle. When scanning\nstarts,'\
@@ -30,8 +30,6 @@ class SkinDetector:
                 'When ready to start,\npress any key.\n\n'\
                 'Try to keep only the skin in the box\n'\
                 'and no other objects.' 
-        # 0 -> webcam
-        self.vid_file = 0
         self.mask = None 
  
     @staticmethod
@@ -51,6 +49,9 @@ class SkinDetector:
         return im 
 
     def show_instructions(self, vid_file = 0, mirror = True):
+        assert os.path.isfile(vid_file) or\
+            isinstance(vid_file,int),\
+            "Video file does not exist"
         cap = cv2.VideoCapture(vid_file)
         val, im = cap.read()
         assert val,\
@@ -60,7 +61,7 @@ class SkinDetector:
             bottom = (int(im.shape[0]/7),
                     int(im.shape[1]/7))
             val, im = cap.read()
-            if val:
+            if not val:
                 break
             if mirror:
                 im = cv2.flip(im, 1)
@@ -71,8 +72,9 @@ class SkinDetector:
             k = cv2.waitKey(20)
             if k != -1:
                 break
+        cv2.destroyAllWindows()
 
-    def extract_skin(self, vid_file = 0, mirror = True):
+    def extract_hsv_model(self, vid_file = 0, mirror = True):
         """
         Runs on a video.
         Gets an HSV skin model of the object inside the rectangle
@@ -82,7 +84,7 @@ class SkinDetector:
         val, im = cap.read()
         assert val, "Cannot read from camera"
         
-        self.accum_hsv_hist = np.zeros((180,256), np.float32) 
+        accum_hsv_hist = np.zeros((180,256), np.float32) 
         time_start = time.time()
         while val and time.time() - time_start < self.timeout:
             val, im = cap.read()
@@ -101,18 +103,20 @@ class SkinDetector:
             hs_hist = cv2.calcHist([hsv_cropped], [0, 1], None,
                     [180, 256], [0, 180, 0, 256])
             # histogram - which pixels are "good" for skin model
-            self.accum_hsv_hist += hs_hist
-            self.accum_hsv_hist = self.accum_hsv_hist /\
+            accum_hsv_hist += hs_hist
+            accum_hsv_hist = accum_hsv_hist /\
                     np.sum(hs_hist)
             cv2.rectangle(im, top, bottom, (40, 255, 0), 4)
             cv2.imshow("skin sample", im)
             k = cv2.waitKey(20)
             if k != -1:
                 break
+        cv2.destroyAllWindows()
+
         # remove outliers
-        hist_h = np.sum(self.accum_hsv_hist, axis = 1) # H from HSV
+        hist_h = np.sum(accum_hsv_hist, axis = 1) # H from HSV
         hist_h[hist_h < .1 * hist_h.max()] = .0
-        hist_s = np.sum(self.accum_hsv_hist, axis = 0) # S from HSV
+        hist_s = np.sum(accum_hsv_hist, axis = 0) # S from HSV
         hist_s[hist_s < .1 * hist_s.max()] = .0
         # compute skin HSV limits
         h_min, h_max = np.nonzero(hist_h[1:])[0][0],\
@@ -136,6 +140,7 @@ class SkinDetector:
         self.hsv_low = np.array([h_min, s_min, 80], np.uint8)
         self.hsv_high = np.array([h_max, s_max, 255], np.uint8) 
 
+
     def apply_mask(self, im, mirror = True):
         assert len(im.shape) == 3,\
             "This method takes a BGR image and finds the"\
@@ -148,6 +153,7 @@ class SkinDetector:
         hsv = cv2.bitwise_and(hsv, hsv, mask = self.mask)
         im_skin = cv2.bitwise_and(im, im, mask = self.mask) 
         return im_skin
+
 
     def smoothen_mask(self, rad = 9, iterations = 2):
         assert self.mask is not None, \
