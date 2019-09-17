@@ -18,19 +18,29 @@ class TestSkinDetector(unittest.TestCase):
         # delete auxilary members
         pass
 
-    def test_hsv_values(self):
-        target_h = 16
-        target_s = 69 
-        # copy workflow from from SkinDetector_run
+    def test_create_skin_detector(self):
+        """
+        Require skin detector to have some hsv_low and hsv_high
+        limits, ideally set to either None or some default value.
+        """
+        test1_passed = False
+        test2_passed = False
+        test3_passed = False
         sd = SkinDetector()
-        # this vid contains only one tone to detect
-        # so self.hsv_low[:2] is equal to self.hsv_high[:2]
-        vid_file = 'test_vid/test.mp4'
-        sd.show_instructions(vid_file)
-        sd.extract_skin(vid_file, mirror = False)
-        h = sd.hsv_low[0]  
-        s = sd.hsv_low[1]  
-        self.assertEqual([h, s], [target_h, target_s])
+        if hasattr(sd, 'hsv_low') and hasattr(sd, 'hsv_high'):
+            test1_passed = True 
+            if sd.hsv_low is not None and\
+                    sd.hsv_high is not None:
+                test2_passed = True
+            if isinstance(sd.hsv_high, np.ndarray) and\
+                    isinstance(sd.hsv_low, np.ndarray):
+                if len(sd.hsv_high) == len(sd.hsv_low) == 3 and\
+                        all(0 <= h < 256 for h in sd.hsv_low) and\
+                        all(0 <= h < 256 for h in sd.hsv_high):
+                            test3_passed = True
+        self.assertEqual(test1_passed, True)
+        self.assertEqual(test2_passed, True)
+        self.assertEqual(test3_passed, True)
 
 if __name__ == '__main__':
     unittest.main()
