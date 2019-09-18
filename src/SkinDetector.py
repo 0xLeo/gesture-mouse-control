@@ -163,14 +163,14 @@ class SkinDetector:
         pass
 
 
-    def apply_ycrcb_mark(self, im, mirror = True):
+    def apply_ycrcb_mask(self, im, mirror = True):
         assert len(im.shape) == 3,\
             "This method takes a BGR image and finds the"\
             "skin"
         if mirror:
             im = cv2.flip(im, 1)
         ycrcb = cv2.cvtColor(im, cv2.COLOR_BGR2YCR_CB)
-        self.mask = cv2.inRange(hsv, self.ycrcb_low,\
+        self.mask = cv2.inRange(ycrcb, self.ycrcb_low,\
             self.ycrcb_high)
         ycrcb = cv2.bitwise_and(ycrcb, ycrcb, mask = self.mask)
         im_skin = cv2.bitwise_and(im, im, mask = self.mask) 
