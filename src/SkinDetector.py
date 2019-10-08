@@ -35,6 +35,7 @@ class SkinDetector:
                 'Try to keep only the skin in the box\n'\
                 'and no other objects.' 
         self.mask = None 
+        self.accum_hsv_hist = None
  
     @staticmethod
     def text_on_image(text, im, y0 = 30):
@@ -61,9 +62,9 @@ class SkinDetector:
         assert val,\
             "Cannot read from camera/ video file"
         while True:
-            top = (0, 0)
-            bottom = (int(im.shape[0]/7),
-                    int(im.shape[1]/7))
+            top = (int(im.shape[0]/7), int(im.shape[1]/7))
+            bottom = (int(2 * im.shape[0]/7),
+                    int(2 * im.shape[1]/7))
             val, im = cap.read()
             if not val:
                 break
@@ -88,7 +89,7 @@ class SkinDetector:
         val, im = cap.read()
         assert val, "Cannot read from camera"
         
-        accum_hsv_hist = np.zeros((180,256), np.float32) 
+        self.accum_hsv_hist = np.zeros((180,256), np.float32) 
         time_start = time.time()
         while val and time.time() - time_start < self.timeout:
             val, im = cap.read()
@@ -99,16 +100,16 @@ class SkinDetector:
             #im = cv2.GaussianBlur(im, (13, 13), 8.25,\
                     #im.copy(), 8.25)
             hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
-            top = (0, 0)
-            bottom = (int(im.shape[0]/7),
-                    int(im.shape[1]/7))
+            top = (int(im.shape[0]/7), int(im.shape[1]/7)) 
+            bottom = (int(2* im.shape[0]/7),
+                    int(2 * im.shape[1]/7))
             # this is where we get the skin model from
             hsv_cropped = hsv[top[1]:bottom[1], top[0]:bottom[0]] 
             hs_hist = cv2.calcHist([hsv_cropped], [0, 1], None,
                     [180, 256], [0, 180, 0, 256])
             # histogram - which pixels are "good" for skin model
-            accum_hsv_hist += hs_hist
-            accum_hsv_hist = accum_hsv_hist /\
+            self.accum_hsv_hist += hs_hist
+            self.accum_hsv_hist = self.accum_hsv_hist /\
                     np.sum(hs_hist)
             cv2.rectangle(im, top, bottom, (40, 255, 0), 4)
             cv2.imshow("skin sample", im)
@@ -116,17 +117,18 @@ class SkinDetector:
             if k != -1:
                 break
         cv2.destroyAllWindows()
+        cap.release()
 
         # remove outliers
-        hist_h = np.sum(accum_hsv_hist, axis = 1) # H from HSV
-        hist_h[hist_h < .1 * hist_h.max()] = .0
-        hist_s = np.sum(accum_hsv_hist, axis = 0) # S from HSV
-        hist_s[hist_s < .1 * hist_s.max()] = .0
+        hist_h = np.sum(self.accum_hsv_hist, axis = 1) # H from HSV
+        hist_h[hist_h < .05 * hist_h.max()] = .0
+        hist_s = np.sum(self.accum_hsv_hist, axis = 0) # S from HSV
+        hist_s[hist_s < .05 * hist_s.max()] = .0
         # compute skin HSV limits
         h_min, h_max = np.nonzero(hist_h[1:])[0][0],\
-                np.nonzero(hist_h[1:])[0][-1]
+            np.nonzero(hist_h[1:])[0][-1]
         s_min, s_max = np.nonzero(hist_s[1:])[0][0],\
-                np.nonzero(hist_s[1:])[0][-1]
+            np.nonzero(hist_s[1:])[0][-1]
         self.hsv_low = np.array([h_min, s_min, 80], np.uint8) 
         self.hsv_high = np.array([h_max, s_max, 255], np.uint8) 
 
@@ -159,23 +161,24 @@ class SkinDetector:
         return im_skin
 
 
-     def backproject(self, bgr, rad = 9):
-            hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-            # to get R  (ratio histogram) matrix -> R between 0 and 1
-            cv2.normalize(self.accum_hsv_hist, self.accum_hsv_hist, 0, 255, cv2.NORM_MINMAX)
-            R = cv2.calcBackProject([hsv],  # image
-                    [0,1],                  # channel selection
-                    self.accum_hsv_hist,              # histogram array
-                    [0,180,0,256],          # channel ranges
-                    scale = 1)
-            # convolve with circular disc
+    def backproject(self, bgr, rad = 5):
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        # to get R  (ratio histogram) matrix -> R between 0 and 1
+        cv2.normalize(self.accum_hsv_hist, self.accum_hsv_hist, 0, 255, cv2.NORM_MINMAX)
+        R = cv2.calcBackProject([hsv],  # image
+            [0,1],                  # channel selection
+            self.accum_hsv_hist,    # histogram array
+            [0,180,0,256],          # channel ranges
+            scale = 1)
+        # convolve with circular disc
+        if rad > 0:
             disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (rad, rad))
             cv2.filter2D(R, -1, disc,R)
-            # Otsu's threshold
-            _, R_thresh = cv2.threshold(R, 0, 255,  cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-            # Make it 3D to AND it with the search image
-            R_thresh = cv2.merge((R_thresh, R_thresh, R_thresh))
-            return R_thresh 
+        # Otsu's threshold
+        _, R_thresh = cv2.threshold(R, 0, 255,  cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        # Make it 3D to AND it with the search image
+        R_thresh = cv2.merge((R_thresh, R_thresh, R_thresh))
+        return R_thresh 
 
 
     def apply_ycrcb_mask(self, im, mirror = True):
