@@ -159,8 +159,23 @@ class SkinDetector:
         return im_skin
 
 
-    def extract_hsv_model(self, vid_file = 0, mirror = True):
-        pass
+     def backproject(self, bgr, rad = 9):
+            hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+            # to get R  (ratio histogram) matrix -> R between 0 and 1
+            cv2.normalize(self.accum_hsv_hist, self.accum_hsv_hist, 0, 255, cv2.NORM_MINMAX)
+            R = cv2.calcBackProject([hsv],  # image
+                    [0,1],                  # channel selection
+                    self.accum_hsv_hist,              # histogram array
+                    [0,180,0,256],          # channel ranges
+                    scale = 1)
+            # convolve with circular disc
+            disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (rad, rad))
+            cv2.filter2D(R, -1, disc,R)
+            # Otsu's threshold
+            _, R_thresh = cv2.threshold(R, 0, 255,  cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+            # Make it 3D to AND it with the search image
+            R_thresh = cv2.merge((R_thresh, R_thresh, R_thresh))
+            return R_thresh 
 
 
     def apply_ycrcb_mask(self, im, mirror = True):
