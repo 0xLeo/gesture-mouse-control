@@ -1,4 +1,4 @@
-# gesture-mouse-control2
+# gesture-mouse-control
 
 ### Brief
 Control computer cursor by using a webcam and gestures using geometric methods. No other equipment required.  
@@ -10,10 +10,15 @@ Still at early stage -- adding classes to get my job done. Functionality I need,
 - [x] grabcut as alternative/ enhancer for skin detector? Used as ground truth generator.
 - [x] Interactive image cropper to extract a skin sample (MouseRoi.py)
 - [x] Lucas-Kanade tracker to track hand features (LkTracker.py)
-- [ ] Contour, convex hull finder, gesture estimator
+- [ ] Count fingers. Fingers will be counted when motion stops so use can click. Number of fingers defines the click. Things to try:
+* Skin detection -> convex hull -> hull deflects
+* Homography between frame 0 and current one.
+* K-means on hsv -> find dominant colour -> paint it white ->
+ Hough lines
+* Edge detection -> Hough lines
 - [x] ~Face removal module~ (not really needed for now)
-- [ ] Hand centre estimator. Centroid? Max inscribed circle?
-- [ ] Library to interface with cursor 
+- [x] ~Hand centre estimator. Centroid? Max inscribed circle?~ Done pretty accurately by Haar detector
+- [ ] Library to interface with cursor (pyautogui)
 - [ ] Unit tests
 
 ### Algorithm description
