@@ -16,6 +16,7 @@ Still at early stage -- adding classes to get my job done. Functionality I need,
 * K-means on hsv -> find dominant colour -> paint it white ->
  Hough lines
 * Edge detection -> Hough lines
+* Fourier transform for horizontal strips -> count peaks
 - [x] ~Face removal module~ (not really needed for now)
 - [x] ~Hand centre estimator. Centroid? Max inscribed circle?~ Done pretty accurately by Haar detector
 - [ ] Library to interface with cursor (pyautogui)
