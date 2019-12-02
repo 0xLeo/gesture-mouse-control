@@ -10,8 +10,8 @@ Still at early stage -- adding classes to get my job done. Functionality I need,
 - [x] grabcut as alternative/ enhancer for skin detector? Used as ground truth generator.
 - [x] Interactive image cropper to extract a skin sample (MouseRoi.py)
 - [x] Lucas-Kanade tracker to track hand features (LkTracker.py)
-- [ ] Count fingers. Fingers will be counted when motion stops so use can click. Number of fingers defines the click. Things to try:
-* Skin detection -> convex hull -> hull deflects
+- [ ] Count fingers. Fingers will be counted when Haar detection bbox motion stops so user can click. Number of fingers defines the click. Things to try:
+* Skin detection -> convex hull -> hull defects
 * Homography between frame 0 and current one.
 * K-means on hsv -> find dominant colour -> paint it white ->
  Hough lines
