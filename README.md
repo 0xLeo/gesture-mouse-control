@@ -19,7 +19,7 @@ Still at early stage -- adding classes to get my job done. Functionality I need,
 * Fourier transform for horizontal strips -> count peaks
 - [x] ~Face removal module~ (not really needed for now)
 - [x] ~Hand centre estimator. Centroid? Max inscribed circle?~ Done pretty accurately by Haar detector
-- [ ] Library to interface with cursor (pyautogui)
+- [ ] Library to interface with cursor (pyautogui or pynut)
 - [ ] Unit tests
 
 ### Algorithm description
