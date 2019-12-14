@@ -7,7 +7,12 @@ import cv2
 # @brief Used to count the number of fingers. 
 #        Input image must contain the fist and the fingers.
 class KMeans:
-    
+    '''
+    kmeans = KMeans(hsv, 3)
+    kmeans.do_kmeans()
+    kmeans.find_most_frequent()
+    n_fingers = kmeans.count_fingers()
+    '''
     def __init__(self, bgr = None, k = 3):
         self.bgr = bgr
         self.k = k
