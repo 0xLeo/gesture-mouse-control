@@ -80,9 +80,9 @@ class KMeans:
     # @param do_open a flag
     #
     # @return 
-    def _smothen_mask(self, iterations = 1,
+    def _smoothen_mask(self, iterations = 1,
             do_close = True, do_open = False):
-        rad = int(np.sqrt(.01 * self.mask.size)) | 1
+        rad = int(np.sqrt(.007 * self.mask.size)) | 1
         strel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
                 (rad,rad))
         if do_close:
@@ -121,7 +121,7 @@ class KMeans:
         maskBW[crop == most_freq_col] = 255
         self.mask = maskBW[:,:,0]
         if do_close or do_open:
-            self._smothen_mask(self.mask, do_close, do_open)
+            self._smoothen_mask(self.mask, do_close, do_open)
 
 
     ##
