@@ -16,9 +16,11 @@ class KMeans:
     def __init__(self, bgr = None, k = 3):
         self.bgr = bgr
         self.k = k
+        self.mask = None
         self.segmented = None
         self.centers = None
         self.most_frequent_mask = None
+        self.bad_quality = False
 
 
     def setup(self, bgr, k):
@@ -46,8 +48,7 @@ class KMeans:
                 'attempts': 10,
                 'flags': cv2.KMEANS_RANDOM_CENTERS}
         # labels returns the index of the cluster they belong in
-        _, labels, centers = cv2.kmeans(data = X,
-            **params)
+        _, labels, centers = cv2.kmeans(data = X, **params)
         centers = np.uint8(centers)
         # same as for l in flat labels: res.append(center[l])
         res = centers[labels.flatten()]
@@ -79,16 +80,17 @@ class KMeans:
     # @param do_open a flag
     #
     # @return 
-    def _smothen_mask(self, rad = 13, iters = 3,
+    def _smothen_mask(self, iterations = 1,
             do_close = True, do_open = False):
-        strel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, \
-                (13,13))
+        rad = int(np.sqrt(.01 * self.mask.size)) | 1
+        strel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
+                (rad,rad))
         if do_close:
             self.mask = cv2.morphologyEx(self.mask,
-                    cv2.MORPH_CLOSE, strel, iterations = iters)
+                    cv2.MORPH_CLOSE, strel, iterations = 2)
         if do_open:
             self.mask = cv2.morphologyEx(self.mask,
-                    cv2.MORPH_OPEN, strel, iterations = iters)
+                    cv2.MORPH_OPEN, strel, iterations = 2)
        
 
     ##
@@ -97,7 +99,7 @@ class KMeans:
     #        Writes result to self.mask
     #
     # @return 
-    def find_most_frequent(self, do_smoothen = True):
+    def find_most_frequent(self, do_open = False, do_close = True):
         if not (isinstance(self.bgr, np.ndarray)\
                 and len(self.bgr.shape) == 3):
             raise TypeError("do_kmeans method needs a 3D image.")
@@ -111,15 +113,15 @@ class KMeans:
         for c in self.centers:
             npix_to_col[np.count_nonzero(seg == c)] = c
         # crop the ROI - the fingers only
-        crop = seg[int(seg.shape[0]/18):int(seg.shape[0]/2.4),:]
+        crop = seg[int(seg.shape[0]/18):int(seg.shape[0]/2.2),:]
         # create a mask which is white at the most frequent colour
         max_freq = [k for k in npix_to_col.keys()][0]
         most_freq_col = npix_to_col[max_freq]
         maskBW = np.zeros_like(crop)
         maskBW[crop == most_freq_col] = 255
         self.mask = maskBW[:,:,0]
-        if do_smoothen:
-            self._smothen_mask(self.mask)
+        if do_close or do_open:
+            self._smothen_mask(self.mask, do_close, do_open)
 
 
     ##
@@ -131,17 +133,14 @@ class KMeans:
         if self.mask is None:
             raise ValueError("_make_fg_white needs a mask."
                 "This is found by calling find_most_frequent.")
-        h, w = self.mask.shape[0], self.mask.shape[1]
-        if np.count_nonzero(self.mask) > 0.4*w*h:
+        if np.count_nonzero(self.mask) > 0.4*self.mask.size:
             self.mask = np.asarray(self.mask, np.int)
             self.mask = np.array(255 - self.mask,np.uint8) 
-        # to avoid selecting borders as contours later
-        #self.mask[:5,:], self.mask[-5:] = np.uint8(0),\
-        #        np.uint8(0)
 
 
     ##
     # @brief Given the BW mask (self.mask), count #fingers
+    #        Currently supports counting 0, 1, or 2 fingers
     #
     # @param debug
     #
@@ -162,22 +161,23 @@ class KMeans:
             cv2.destroyAllWindows()
 
         # look into geometrical properties of contours
-        h = self.mask.shape[0]
-        w = self.mask.shape[1]
         if len(conts) == 0 :
             return 0
         conts = sorted(conts, key = cv2.contourArea, reverse= True)[:2]
+        # 0 means zero fingers - just noise
+        # if it cannot decide, return 1
+        # 1 should be the most common of the 3 gestures
         if len(conts) == 1:
-            if cv2.contourArea(conts[0]) < 0.05*w*h:
+            if cv2.contourArea(conts[0]) < 0.05*self.mask.size:
                 return 0
         elif len(conts) == 2:
-            # then random noise
             if cv2.contourArea(conts[0]) +\
-                    cv2.contourArea(conts[1]) < 0.05*w*h:
+                    cv2.contourArea(conts[1]) < 0.05*self.mask.size:
                 return 0
             # then 2 contours of similar size => 2 fingers
             if cv2.contourArea(conts[1]) > .5*cv2.contourArea(conts[0]) :
                 return 2 
         return 1
+
 
          
