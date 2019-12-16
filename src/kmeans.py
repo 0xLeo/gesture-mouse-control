@@ -174,6 +174,8 @@ class KMeans:
             if cv2.contourArea(conts[0]) +\
                     cv2.contourArea(conts[1]) < 0.05*self.mask.size:
                 return 0
+            #TODO: sometimes fingers are combined at the bottom
+            # so it thinks they're 1!
             # then 2 contours of similar size => 2 fingers
             if cv2.contourArea(conts[1]) > .5*cv2.contourArea(conts[0]) :
                 return 2 
