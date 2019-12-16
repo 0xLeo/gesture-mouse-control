@@ -47,7 +47,6 @@ class TestKMeans(unittest.TestCase):
         '''
         Counts number of fingers and compares against GT
         '''
-        # TODO: count fingers, if good accuracy pass tests
         results = {}
         for f in self.files_to_read:
             hsv = self.read_image(f)
