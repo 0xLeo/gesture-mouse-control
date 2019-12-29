@@ -200,3 +200,46 @@ class SkinDetector:
         assert self.mask is not None, \
             "mask processing follows the apply_mask method"
         # TODO: opening followed by closing
+
+
+    ##
+    # @brief 
+    #
+    # @param im input 3D image
+    # @param colour reference colour. We measure the distance from it 
+    # @param channels which channels of input image to measure from 
+    #
+    # @return a numpy array, dark = small distance, white = high
+    @classmethod
+    def match_colour(self,
+            im: np.ndarray,
+            colour: tuple,
+            channels = [0, 1]) -> np.ndarray:
+        """
+        Find the difference between the given colour and `im` 
+        in a pixel-wise manner.
+        The input colour can be in HS domain, e.g. (10, 80).
+        `channels` selects which channels of the input image to 
+        use, e.g. if the `colour` is in HS domain then use [0,1].
+        """
+        assert all([0 <= c <= 2 for c in channels]),\
+            'channels must be integers from 0 to 2'
+        assert len(colour) == len(channels) == 2 or\
+                len(colour) == len(channels) == 1,\
+                'number of channels must be equal to the dimension of '\
+                'reference colour and up to two channels can be used'
+        orig_shape = (im.shape[0], im.shape[1])
+        if len(channels) == len(colour) == 1:
+            c1, ref1 = channels[0], colour
+            dist_vec = np.array([np.abs(ref1-im[c1])\
+                for im in im.reshape(-1,3)], np.uint8).\
+                reshape(orig_shape)
+        else:
+            c1, c2 = channels
+            ref1, ref2 = colour 
+            dist_vec = np.array([np.hypot(ref1-im[c1],\
+                ref2-im[c2]) for im in im.reshape(-1,3)], np.uint8).\
+                reshape(orig_shape)
+        return dist_vec
+
+        
