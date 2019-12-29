@@ -240,6 +240,6 @@ class SkinDetector:
             dist_vec = np.array([np.hypot(ref1-im[c1],\
                 ref2-im[c2]) for im in im.reshape(-1,3)], np.uint8).\
                 reshape(orig_shape)
-        return dist_vec
+        return np.bitwise_not(dist_vec).astype(np.uint8)
 
         
