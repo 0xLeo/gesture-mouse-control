@@ -6,7 +6,6 @@ class Heatmap():
         self.heatmap = np.zeros((rows_cols[0], rows_cols[1]), np.uint8)
         self.max_hits = 4
 
-
     def update(self, x, y, w, h):
         """
         faceCascade.detectMultiScale returns (x, y, w, h)
@@ -20,9 +19,11 @@ class Heatmap():
         self.heatmap[y:y+h, x:x+w] += 2
         self.heatmap[self.heatmap > self.max_hits] = self.max_hits
 
-
-    def find_centre(self) -> tuple:
+    def find_centroid(self) -> tuple:
         """
         get the centre of the highest area
         """
-        pass
+        thresh_map = np.zeros(self.heatmap.shape, np.uint8)
+        thresh_map[self.heatmap == self.heatmap.max()] = 255
+        M = cv2.moments(thresh_map)
+        return int(M["m10"]/M["m00"]), int(M["m01"]/M["m00"])
