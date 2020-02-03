@@ -1,12 +1,10 @@
-import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 
 class Heatmap():
     def __init__(self, rows_cols: tuple):
         self.heatmap = np.zeros((rows_cols[0], rows_cols[1]), np.uint8)
-        self.max_hits = 5
+        self.max_hits = 4
 
 
     def update(self, x, y, w, h):
