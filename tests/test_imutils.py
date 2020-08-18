@@ -26,5 +26,5 @@ class TestImUtilsNoKeypress(unittest.TestCase):
     def test_duration(self):
         duration = 4 # in sec
         time_st = time.time()
-        ImUtils.qimshow(self.im_to_show, delay = duration) 
-        self.assertEqual( 3.5 < time.time() - time_st < 4.5, True) # about 4 sec
+        ImUtils.qimshow(self.im_to_show, delay = duration)
+        self.assertEqual( duration - .5 < time.time() - time_st < duration + .5, True) # about 4 sec
