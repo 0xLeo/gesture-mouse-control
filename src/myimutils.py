@@ -3,7 +3,8 @@ import numpy as np
 from typing import Union, List, Tuple
 
 
-def qimshow(im: np.ndarray, delay: float = 1.0, title = "qimshow", keypress: str = None):
+def qimshow(im: np.ndarray, delay: float = 1.0, title = "qimshow",
+        keypress: str = None, close_window: bool = True):
     """qimshow. Quick imshow. A wrapper around CV's imshow, waitKey and destroyWindow.
     Shows an image for a certain duration or till a key is pressed
 
@@ -18,6 +19,8 @@ def qimshow(im: np.ndarray, delay: float = 1.0, title = "qimshow", keypress: str
     keypress : str
         Which key (as a char) to press in order to close the window.
         If None, wait for `delay` seconds.
+    close_window : bool
+        If True, close window after dispalying it
     """
     if keypress is not None:
         if len(keypress) != 1 or not keypress.isalnum():
@@ -33,7 +36,8 @@ def qimshow(im: np.ndarray, delay: float = 1.0, title = "qimshow", keypress: str
     else:
         cv2.imshow(title, im)
         cv2.waitKey(delay=int(delay*1000))
-    cv2.destroyWindow(title)
+    if close_window:
+        cv2.destroyWindow(title)
 
 
 
