@@ -1,4 +1,6 @@
-# file index, x0, y0, x1, y1
+# video file path
+# frame i index, x0, y0, x1, y1
+1_subject_1_room_10_frames.mp4
 0, 165, 230, 300, 367
 1, 177, 185, 296, 290
 2, 147, 199, 240, 281
