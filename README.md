@@ -2,25 +2,7 @@
 
 ### Brief
 Control computer cursor by using a webcam and gestures using geometric methods. No other equipment required.  
-Still at early stage -- adding classes to get my job done. Functionality I need, as Python classes is:  
-- [x] Adaptive skin detector
-- [x] Backprojection-based skin detector
-- [x] Try cascade (e.g. Haar) detector
-- [ ] Haar detector must output only **zero** or **one** detections. Try creating maybe a heat map to achieve that.
-- [x] grabcut as alternative/ enhancer for skin detector? Used as ground truth generator.
-- [x] Interactive image cropper to extract a skin sample (MouseRoi.py)
-- [x] Lucas-Kanade tracker to track hand features (LkTracker.py)
-- [ ] Count fingers. Fingers will be counted when Haar detection bbox motion stops so user can click. Number of fingers defines the click. Things to try:
-* Skin detection -> convex hull -> hull defects
-* Homography between frame 0 and current one.
-* K-means on hsv -> find dominant colour -> paint it white ->
- Hough lines
-* Edge detection -> Hough lines
-* Fourier transform for horizontal strips -> count peaks
-- [x] ~Face removal module~ (not really needed for now)
-- [x] ~Hand centre estimator. Centroid? Max inscribed circle?~ Done pretty accurately by Haar detector
-- [ ] Library to interface with cursor (pyautogui or pynut)
-- [ ] Unit tests
+
 
 ### Algorithm description
 
