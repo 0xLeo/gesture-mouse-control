@@ -15,14 +15,14 @@ class TestHaarCascade(unittest.TestCase):
         self.fpath_vid = os.path.join('vid_detection',
                 '1_subject_1_room_10_frames.mp4')
         self.fpath_gt = os.path.join('vid_selection',
-                '1_subject_1_room_1_10_frames.txt')
+                '1_subject_1_room_10_frames.csv')
+
+    
+    def test_haar_cascade(self, debug = False):
         if not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_gt):
             return # there's nothing to test
-
-    
-    def test_haar_cascade(self, debug = False):
         hand_detector = cv2.CascadeClassifier(self.fpath_casc)
         cap = cv2.VideoCapture(self.fpath_vid)
         val, first = True, True
