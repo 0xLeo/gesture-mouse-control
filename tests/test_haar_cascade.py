@@ -14,11 +14,11 @@ class TestHaarCascade(unittest.TestCase):
         self.fpath_casc = os.path.join('..', 'cascade', 'hand.xml')
         self.fpath_vid = os.path.join('vid_detection',
                 '1_subject_1_room_10_frames.mp4')
-        self.fpath_gt = os.path.join('vid_selection',
+        self.fpath_gt = os.path.join('vid_detection',
                 '1_subject_1_room_10_frames.csv')
 
     
-    def test_haar_cascade(self, debug = False):
+    def test_haar_cascade(self, debug = True):
         if not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_gt):
@@ -26,8 +26,10 @@ class TestHaarCascade(unittest.TestCase):
         hand_detector = cv2.CascadeClassifier(self.fpath_casc)
         cap = cv2.VideoCapture(self.fpath_vid)
         val, first = True, True
-        while val:
+        while True:
             val, frame = cap.read()
+            if not val:
+                break
             if first:
                 r, c, _ = frame.shape
                 hm = heatmap.Heatmap((r, c))
