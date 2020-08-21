@@ -4,8 +4,8 @@ import sys
 this_script_path = os.path.abspath(__file__)
 this_script_folder = os.path.dirname(this_script_path)
 sys.path.insert(1, os.path.join(this_script_folder, '..', 'src'))
-import heatmap 
 import numpy as np
+from typing import List, Tuple
 import cv2
 from shapely.geometry import Polygon # Polygon.intersection
 
@@ -24,10 +24,10 @@ class TestHaarCascade(unittest.TestCase):
     
     def _read_ground_truth(self):
         """
-        # header 1
-        # header 2
-        # <video_file_relative_path>
-        # frame_ind, x0, y0, x1, y1
+        # header line 1
+        # header line 2
+        <video_file_relative_path>
+        frame_ind, x0, y0, x1, y1
         """
         if not os.path.isfile(self.fpath_gt):
             print("[DBG] Ground truth %s not found." %
@@ -51,10 +51,7 @@ class TestHaarCascade(unittest.TestCase):
         self._gt_rectangles = rect_per_frame
                 
 
-
-
-
-    def test_haar_cascade(self, debug = False):
+    def test_haar_cascade(self, debug = True):
         if not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_gt):
@@ -63,17 +60,18 @@ class TestHaarCascade(unittest.TestCase):
 
         hand_detector = cv2.CascadeClassifier(self.fpath_casc)
         cap = cv2.VideoCapture(self.fpath_vid)
-        val, first = True, True
+        val = True
         fr_ind = 0
 
         while True:
             val, frame = cap.read()
-            if not val:
+            if not val: # cannot read frame
                 break
-            if first:
-                r, c, _ = frame.shape
-                hm = heatmap.Heatmap((r, c))
-                first = False
+            try:
+                self._gt_rectangles[fr_ind]
+            except KeyError:
+                continue # no GT for that frame - skip
+
             else:
                 grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 hands = hand_detector.detectMultiScale(grey,
@@ -98,13 +96,14 @@ class TestHaarCascade(unittest.TestCase):
                     print(xgt0, ygt0, xgt1, ygt1)
                     print("Iintersection of union at frame %03d = %.3f" %
                             (fr_ind, IoU))
-                    cv2.imshow("meas", cv2.rectangle(frame.copy(), (x0, y0), (x1, y1),
-                        (60, 255, 0), 3))
-                    cv2.imshow("GT", cv2.rectangle(frame.copy(), (xgt0, ygt0), (xgt1, ygt1),
-                        (255, 60, 0), 3))
+                    im_lbl = frame.copy()
+                    cv2.rectangle(im_lbl, (xgt0, ygt0), (xgt1, ygt1),
+                            (255, 60, 0), 3)
+                    cv2.rectangle(im_lbl, (x0, y0), (x1, y1),
+                            (60, 255, 0), 3)
+                    cv2.imshow("GT (blue) vs measurement (green)", im_lbl)
                     cv2.waitKey(3000)
             # update frame counter
             fr_ind += 1
-        cv2.destroyWindow("GT")
-        cv2.destroyWindow("meas")
+        cv2.destroyAllWindows()
         cap.release()
