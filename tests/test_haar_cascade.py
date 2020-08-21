@@ -63,6 +63,14 @@ class TestHaarCascade(unittest.TestCase):
         val = True
         fr_ind = 0
 
+        ### test success configs - TODO: move them to an .xml file
+        # if IoU > good_IoU, then we have a good detection (good_detections++)
+        good_detections, good_IoU = 0, 0.25
+        # If good_ious/total_ious < ratio, then the detector is crap and test must fail
+        good_IoUs_ratio = 0.2
+        IoUs = []
+        ### end of config
+
         while True:
             val, frame = cap.read()
             if not val: # cannot read frame
@@ -91,6 +99,7 @@ class TestHaarCascade(unittest.TestCase):
                 intersection = rect.intersection(rect_gt).area
                 union = rect.area + rect_gt.area - intersection
                 IoU = intersection/union
+                IoUs.append(IoU)
                 if debug:
                     print(x0, y0, x1, y1)
                     print(xgt0, ygt0, xgt1, ygt1)
@@ -107,3 +116,13 @@ class TestHaarCascade(unittest.TestCase):
             fr_ind += 1
         cv2.destroyAllWindows()
         cap.release()
+
+        if len(IoUs) > 0: # else no data were read so skip
+            n_good_IoUs = len([i for i in IoUs if i > good_IoU])
+            if debug:
+                print("%d good detections over total of %d samples" %
+                        (n_good_IoUs, len(IoUs)))
+                print("Average IoU (0 < IoU < 1, 1 good) was %.4f" %
+                        np.mean(IoUs))
+            n_good_IoUs /= len(IoUs)
+            self.assertGreater(n_good_IoUs, good_IoUs_ratio)
