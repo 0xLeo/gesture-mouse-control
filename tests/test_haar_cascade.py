@@ -126,5 +126,3 @@ class TestHaarCascade(unittest.TestCase):
                         np.mean(IoUs))
             n_good_IoUs /= len(IoUs)
             self.assertGreater(n_good_IoUs, good_IoUs_ratio)
-
-unittest.main()
