@@ -46,12 +46,12 @@ class TestHaarCascade(unittest.TestCase):
                         this_script_folder, line)
             elif contains_rectangle(line):
                 vals = [int(n.strip()) for n in line.split(',')]
-                ind, x0, y0, x1, y1 = vals[0], vals[1], vals[2], vals[3], vals[4]
+                ind, x0, y0, x1, y1 = vals
                 rect_per_frame[ind] = (x0, y0, x1, y1)
         self._gt_rectangles = rect_per_frame
                 
 
-    def test_haar_cascade(self, debug = True):
+    def test_haar_cascade(self, debug = False):
         if not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_casc) or\
         not os.path.isfile(self.fpath_gt):
@@ -126,3 +126,5 @@ class TestHaarCascade(unittest.TestCase):
                         np.mean(IoUs))
             n_good_IoUs /= len(IoUs)
             self.assertGreater(n_good_IoUs, good_IoUs_ratio)
+
+unittest.main()
