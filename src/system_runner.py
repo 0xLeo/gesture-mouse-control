@@ -33,8 +33,10 @@ while True:
     curr = grey
     flow_mag, flow_ang = dof.find_flow(prvs, curr)
     flow_mag = cv2.normalize(flow_mag, None, 0, 255, cv2.NORM_MINMAX)
+    flow_mag = np.array(flow_mag, np.uint8)
+    _, flow_mag = cv2.threshold(flow_mag, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     hands = hand_detector.detectMultiScale(grey,
-            scaleFactor = 1.2,
+            scaleFactor = 1.15,
             minNeighbors = 5,
             minSize = (64, 64))
     print(hands)
@@ -45,18 +47,20 @@ while True:
             pass
     x1, y1 = x0 + w, y0 + h
     hm.update(x0, y0, w, h)
-    r = int(w/2)
+    r1 = int(w/2*1.1)
+    r2 = int(2.1*r)
+    r = r1
     centroid = hm.find_centroid()
 
     #fr_show = cv2.rectangle(frame.copy(), (x0, y0), (x1, y1), color = (60,255,0), thickness = 3)
     fr_show = draw_point(flow_mag.copy(), centroid)
     fr_show = cv2.circle(fr_show, centroid, r, (60,255,0), 3)
-    fr_show = cv2.circle(fr_show, centroid, 2*r, (60,255,0), 3)
+    fr_show = cv2.circle(fr_show, centroid, int(2.1*r), (60,255,0), 3)
     if hm.is_still():
-        fr_show = text_on_im(fr_show, "STILL", thickness = 2)
+        fr_show = text_on_im(fr_show, "STILL", thickness = 2, col = (70,255,0))
     cv2.imshow("", fr_show)
     cv2.waitKey(33)
     print(x0, y0, x1, y1)
-    prvs = prvs
+    prvs = curr 
 
 cv2.destroyAllWindows()
