@@ -40,7 +40,7 @@ class TestHeatmap(unittest.TestCase):
         hm = heatmap.Heatmap((rows, cols))
         for rect in rects:
             hm.update(*rect)
-        centroid = hm.find_centroid()
+        centroid, hand_rad = hm.find_centroid()
         ### find centroid manually
         canvas = np.zeros((rows, cols), np.uint8)
         for rect in rects:
