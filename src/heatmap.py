@@ -64,7 +64,23 @@ class Heatmap():
         self._last_centroids.append(np.array(centr))
         # find mean detectio radius
         self._rad_mean = int(np.mean(self._rads)) 
+        self._centr = centr
         return centr, self._rad_mean
+
+
+    def hand_mask(self) -> np.ndarray:
+        """Returns a matrix at the same size as the heat map
+        whose white pixels represent potential hand pixel candidates"""
+        mask = np.zeros_like(self.heatmap)
+        x0, y0 = self._centr
+        h, w = self.heatmap.shape
+        rad = self._rad_mean
+        y, x = np.ogrid[-y0:h-y0, -x0:w-x0]
+        # that's where hand pixels are to be detected
+        disc = x**2 + (y + rad)**2 <= 3*rad**2
+        mask[disc] = 255
+        mask[y0 + int(rad/2):, :] = 0
+        return mask
 
 
     def is_still(self) -> bool:
