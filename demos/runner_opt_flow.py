@@ -45,11 +45,11 @@ while True:
     print(hands)
     for hand in hands:
         try:
-            x0, y0, w, h = hand # TODO: update with more
+            x0, y0, w, h = hand
+            hm.update(x0, y0, w, h)
         except:
             pass
     x1, y1 = x0 + w, y0 + h
-    hm.update(x0, y0, w, h)
     r1 = int(w/2*1.1)
     r2 = int(2.1*r)
     r = r1
