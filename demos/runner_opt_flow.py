@@ -35,9 +35,7 @@ while True:
     grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     curr = grey
     flow_mag, flow_ang = dof.find_flow(prvs, curr)
-    flow_mag = cv2.normalize(flow_mag, None, 0, 255, cv2.NORM_MINMAX)
-    flow_mag = np.array(flow_mag, np.uint8)
-    _, flow_mag = cv2.threshold(flow_mag, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    flow_mag = dof.get_combined_flow()
     hands = hand_detector.detectMultiScale(grey,
             scaleFactor = 1.15,
             minNeighbors = 5,
