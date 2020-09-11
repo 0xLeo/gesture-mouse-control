@@ -1,10 +1,23 @@
 import numpy as np
 import cv2
+from collections import deque
+from functools import reduce
 
 
 class DenseOptFlow:
     """DenseOptFlow."""
-    def __init__(self):
+    def __init__(self, history = 3):
+        """__init__.
+
+        Parameters
+        ----------
+        history :
+            How many magnitudes to store when combuting the combined flow
+        """
+        # FILO that stores the magnitude matrices outputted by opt flow
+        self._flow_ring_buffer = deque()
+        self._history = history
+        self._max = None
         self._max_mag = None
 
 
@@ -44,4 +57,25 @@ class DenseOptFlow:
             bgr_mask = cv2.cvtColor(hsv_mask, cv2.COLOR_HSV2BGR)
             cv2.imshow('optical flow', bgr_mask)
             cv2.waitKey(33)
+        self._mag = mag
         return mag, ang
+
+
+    def get_combined_flow(self) -> np.ndarray:
+        """ Looks into the ring buffer elements (magnitude matrices) and
+        returns a matrix that represents their combination
+        """
+        # convert it to 8-bit image
+        self._mag = cv2.normalize(self._mag, None, 0, 255, cv2.NORM_MINMAX)
+        self._mag = np.array(self._mag, np.uint8)
+        _, self._mag = cv2.threshold(self._mag, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        if len(self._flow_ring_buffer) == 0:
+            # initialise the ring buffer
+            for _ in range(self._history):
+                self._flow_ring_buffer.append(self._mag)
+        else:
+            # update ring buffer
+            self._flow_ring_buffer.popleft()
+            self._flow_ring_buffer.append(self._mag)
+        # OR all elements together
+        return reduce(lambda x, y: np.bitwise_or(x, y), self._flow_ring_buffer)
