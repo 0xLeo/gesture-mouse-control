@@ -17,7 +17,6 @@ class DenseOptFlow:
         # FILO that stores the magnitude matrices outputted by opt flow
         self._flow_ring_buffer = deque()
         self._history = history
-        self._max = None
         self._max_mag = None
 
 

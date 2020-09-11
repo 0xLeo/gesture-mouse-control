@@ -48,10 +48,10 @@ while True:
         except:
             pass
     x1, y1 = x0 + w, y0 + h
-    r1 = int(w/2*1.1)
-    r2 = int(2.1*r)
+    centroid, rad = hm.find_centroid()
+    r1 = int(rad*1.1)
+    r2 = int(2.1*rad)
     r = r1
-    centroid = hm.find_centroid()
 
     #fr_show = cv2.rectangle(frame.copy(), (x0, y0), (x1, y1), color = (60,255,0), thickness = 3)
     fr_show = draw_point(flow_mag.copy(), centroid)
