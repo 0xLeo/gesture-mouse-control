@@ -3,6 +3,9 @@ import sys
 import os
 import cv2
 import numpy as np
+this_script_path = os.path.abspath(__file__)
+this_script_folder = os.path.dirname(this_script_path)
+sys.path.insert(1, os.path.join(this_script_folder, '..', 'src'))
 from heatmap import Heatmap
 from myimutils import qimshow, text_on_im, draw_point, imscale
 from dense_opt_flow import DenseOptFlow
